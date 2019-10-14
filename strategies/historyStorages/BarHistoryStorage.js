@@ -1,15 +1,27 @@
 const LatestHashTracker = require("./LatestHashTracker");
 
 function BarHistoryStorage(archive) {
+    const path = require("path");
     const blocksPath = "blocks";
     let lht = new LatestHashTracker();
+
     this.getHashLatestBlock = lht.getHashLatestBlock;
 
-    const path = require("path");
     this.appendBlock = function (block, announceFlag, callback) {
-        archive.writeFile(path.join(blocksPath, "index"), block.pulse.toString(), $$.logError);
-        archive.writeFile(path.join(blocksPath, block.pulse), JSON.stringify(block, null, 1), callback);
-        lht.update(block.pulse, block);
+        archive.writeFile(path.join(blocksPath, block.pulse), JSON.stringify(block, null, 1), (err) => {
+            if (err) {
+                return callback(err);
+            }
+
+            archive.writeFile(path.join(blocksPath, "index"), block.pulse.toString(), (err) => {
+                if (err) {
+                    return callback(err);
+                }
+
+                lht.update(block.pulse, block);
+                callback();
+            });
+        });
     };
 
     this.getLatestBlockNumber = function (callback) {

@@ -7,36 +7,61 @@ function FsHistoryStorage(folder) {
 
     let fs = require("fs");
 
-    fs.mkdir(blocksPath, function (err) {
-    });
-
     this.appendBlock = function (block, announceFlag, callback) {
-        console.log("Writing block:", block.pulse);
-        fs.writeFile(blocksPath + "/index", block.pulse.toString(), $$.logError);
-        fs.writeFile(blocksPath + "/" + block.pulse, JSON.stringify(block, null, 1), callback);
-        lht.update(block.pulse, block);
+        ensureBlocksPathExist((err) => {
+            if (err) {
+                return callback(err);
+            }
+
+            fs.writeFile(blocksPath + "/" + block.pulse, JSON.stringify(block, null, 1), (err) => {
+                if (err) {
+                    return callback(err);
+                }
+                fs.writeFile(blocksPath + "/index", block.pulse.toString(), (err) => {
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    lht.update(block.pulse, block);
+                    callback();
+                });
+            });
+        });
     };
 
     this.getLatestBlockNumber = function (callback) {
-        fs.readFile(blocksPath + "/index", function (err, res) {
-            let maxBlockNumber = 0;
+        ensureBlocksPathExist((err) => {
             if (err) {
-                callback(err);
-            } else {
-                maxBlockNumber = parseInt(res);
-                callback(null, maxBlockNumber);
+                return callback(err);
             }
+
+            fs.readFile(blocksPath + "/index", function (err, res) {
+                let maxBlockNumber = 0;
+                if (err) {
+                    callback(err);
+                } else {
+                    maxBlockNumber = parseInt(res);
+                    callback(null, maxBlockNumber);
+                }
+            });
         });
     };
 
     this.loadSpecificBlock = function (blockNumber, callback) {
-        fs.readFile(blocksPath + "/" + blockNumber, function (err, res) {
+        ensureBlocksPathExist((err) => {
             if (err) {
-                callback(err, null);
-            } else {
-                callback(null, JSON.parse(res));
-                lht.update(res.pulse, res);
+                return callback(err);
             }
+
+            fs.readFile(blocksPath + "/" + blockNumber, function (err, res) {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    res = JSON.parse(res);
+                    lht.update(res.pulse, res);
+                    callback(null, res);
+                }
+            });
         });
     };
 
@@ -45,6 +70,17 @@ function FsHistoryStorage(folder) {
     //send to callback all blocks newer then fromVSD
     this.observeNewBlocks = function (fromVSD, callback) {
         observer = callback;
+    };
+
+    //------------------------------------------- internal methods ----------------------------------------------------
+    function ensureBlocksPathExist(callback) {
+        fs.access(blocksPath, (err) => {
+            if (err) {
+                fs.mkdir(blocksPath, {recursive: true}, callback);
+            }else{
+                callback();
+            }
+        });
     }
 }
 
