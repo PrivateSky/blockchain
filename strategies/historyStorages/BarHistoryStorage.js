@@ -8,7 +8,7 @@ function BarHistoryStorage(archive) {
     this.getHashLatestBlock = lht.getHashLatestBlock;
 
     this.appendBlock = function (block, announceFlag, callback) {
-        archive.writeFile(path.join(blocksPath, block.pulse), JSON.stringify(block, null, 1), (err) => {
+        archive.writeFile(path.join(blocksPath, block.pulse.toString()), JSON.stringify(block, null, 1), (err) => {
             if (err) {
                 return callback(err);
             }
@@ -35,7 +35,7 @@ function BarHistoryStorage(archive) {
     };
 
     this.loadSpecificBlock = function (blockNumber, callback) {
-        archive.extractFile(path.join(blocksPath, blockNumber), (err, res) => {
+        archive.readFile(path.join(blocksPath, blockNumber.toString()), (err, res) => {
             if (err) {
                 return callback(err);
             }
