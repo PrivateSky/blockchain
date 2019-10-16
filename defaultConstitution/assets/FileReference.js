@@ -1,12 +1,12 @@
 $$.asset.describe("FileReference", {
-	public:{
-		alias:"string",
-		seed :"string",
-		dseed:"string"
-	},
-	init:function(alias, seed, dseed){
-		this.alias = alias;
-		this.seed  = seed;
-		this.dseed = dseed;
-	}
+    public: {
+        alias: "string:key",
+        encryptionKey: "string",
+        barMapDigest: "string"
+    },
+    init: function (alias, encryptionKey, barMapDigest) {
+        this.alias = alias;
+        this.encryptionKey = encryptionKey;
+        this.barMapDigest = barMapDigest;
+    }
 });

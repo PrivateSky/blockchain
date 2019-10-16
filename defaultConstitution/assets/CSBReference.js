@@ -1,20 +1,10 @@
-
 $$.asset.describe("CSBReference", {
-    public:{
-        alias:"string:key",
-        seed :"string",
-        dseed:"string"
+    public: {
+        alias: "string:key",
+        dseed: "string"
     },
-    init:function(alias, seed, dseed, ){
+    init: function (alias, dseed) {
         this.alias = alias;
-        this.seed  = seed;
         this.dseed = dseed;
-    },
-    update:function(fingerprint){
-        this.fingerprint = fingerprint;
-        this.version++;
-    },
-    registerBackupUrl:function(backupUrl){
-        this.backups.add(backupUrl);
     }
 });
