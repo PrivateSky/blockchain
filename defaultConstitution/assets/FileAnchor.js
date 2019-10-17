@@ -1,12 +1,20 @@
 $$.asset.describe("FileAnchor", {
     public: {
         alias: "string:key",
-        encryptionKey: "string",
-        barMapDigest: "string"
+        digest: "string",
+        versions: "array",
+        encryptionKey: "string"
     },
-    init: function (alias, encryptionKey, barMapDigest) {
+    init: function (alias, barMapDigest, encryptionKey) {
         this.alias = alias;
+        this.digest = barMapDigest;
         this.encryptionKey = encryptionKey;
-        this.barMapDigest = barMapDigest;
+        this.versions = [];
+    },
+    update: function (version) {
+        this.versions.push(version);
+    },
+    getVersions: function () {
+        return this.versions;
     }
 });

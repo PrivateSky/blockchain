@@ -1,10 +1,12 @@
 $$.asset.describe("CSBReference", {
     public: {
-        alias: "string:key",
+        uid: "string:key",
+        seed: "string",
         dseed: "string"
     },
-    init: function (alias, dseed) {
-        this.alias = alias;
+    init: function (uid, seed, dseed) {
+        this.uid = uid;
+        this.seed = seed;
         this.dseed = dseed;
     }
 });
