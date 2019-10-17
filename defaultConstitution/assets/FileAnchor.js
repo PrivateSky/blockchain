@@ -1,3 +1,5 @@
+const AnchorVersionList = require("./utils/AnchorVersionList");
+
 $$.asset.describe("FileAnchor", {
     public: {
         alias: "string:key",
@@ -9,12 +11,12 @@ $$.asset.describe("FileAnchor", {
         this.alias = alias;
         this.digest = barMapDigest;
         this.encryptionKey = encryptionKey;
-        this.versions = [];
+        this.versions = AnchorVersionList.createAnchorVersionList();
     },
     update: function (version) {
-        this.versions.push(version);
+        this.versions.addVersion(version);
     },
-    getVersions: function () {
-        return this.versions;
+    getVersion: function (hash) {
+        return this.versions.getVersion(hash);
     }
 });

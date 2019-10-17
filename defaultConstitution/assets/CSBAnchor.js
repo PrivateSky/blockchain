@@ -1,8 +1,9 @@
+const AnchorVersionList = require("./utils/AnchorVersionList");
 $$.asset.describe("CSBAnchor", {
     public: {
         alias: "string:key",
         digest: "string",
-        versions: "array",
+        versions: "object",
         authData: "array",
         dseed: "string"
     },
@@ -11,13 +12,13 @@ $$.asset.describe("CSBAnchor", {
         this.digest = digest;
         this.authData = authData;
         this.dseed = dseed;
-        this.versions = [];
+        this.versions = AnchorVersionList.createAnchorVersionList();
     },
     update: function (version) {
-        this.versions.push(version);
+        this.versions.addVersion(version);
     },
-    getVersions: function () {
-        return this.versions;
+    getVersion: function (hash) {
+        return this.versions.getVersion(hash);
     },
     addAuthData: function (agentUid) {
         this.authData.push(agentUid);
