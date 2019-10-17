@@ -1,4 +1,4 @@
-$$.asset.describe("FileReference", {
+$$.asset.describe("FileAnchor", {
     public: {
         alias: "string:key",
         encryptionKey: "string",

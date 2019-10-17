@@ -4,9 +4,8 @@ $$.asset.describe("CSBAnchor", {
         dseed: "string",
         digest: "string"
     },
-    init: function (alias, seed, dseed, digest) {
+    init: function (alias, dseed, digest) {
         this.alias = alias;
-        this.seed = seed;
         this.dseed = dseed;
         this.digest = digest;
     }
