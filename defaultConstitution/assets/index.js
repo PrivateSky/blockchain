@@ -7,6 +7,5 @@ module.exports = $$.library(function(){
     require("./Key");
     require("../transactions/transactions");
     require("./FileAnchor");
-    require("./EmbeddedFile");
     require('./CSBMeta');
 });
