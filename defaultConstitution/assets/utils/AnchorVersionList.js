@@ -1,18 +1,18 @@
-function AnchorVersionList(versionList) {
-    versionList = versionList || [];
+function AnchorVersionList() {
+    this.versionList = [];
 
     this.addVersion = function (version) {
-        versionList.push(version);
+        this.versionList.push(version);
     };
 
     this.getVersion = function (hash) {
-        return versionList.find(version => version.hash === hash);
+        this.versionList.find(version => version.hash === hash);
     };
 }
 
 module.exports = {
-    createAnchorVersionList(versionList){
-        return new AnchorVersionList(versionList);
+    createAnchorVersionList(){
+        return new AnchorVersionList();
     }
 };
 

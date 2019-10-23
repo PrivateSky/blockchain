@@ -1,9 +1,10 @@
-function EncryptedDseedList(encDseedList) {
-    encDseedList = encDseedList || {};
+function EncryptedDseedList() {
+    this.encDseedList = {};
 
     this.addEncryptedDseed = function (encDseed) {
-        encDseedList.push(encDseed);
+        this.push(encDseed);
     }
+
 }
 
 module.exports = {
