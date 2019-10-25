@@ -1,25 +1,27 @@
+const csbSecurityContext = require("security-context").createSecurityContext("CSBSecurityContext");
 $$.asset.describe("BarAnchor", {
     public: {
         mountPoint: "string",
         barMapDigest: "string",
-        readList: "array",//encrypted seeds with public keys
-        writeList: "array"//encrypted seed with public keys
+        readList: "array", //encrypted seeds with public keys
+        writeList: "array", //agentIds
     },
-    init: function (mountPoint, barMapDigest) {
+    init: function (mountPoint, barMapDigest, lseed) {
         this.mountPoint = mountPoint;
         this.barMapDigest = barMapDigest;
+        this.lseed = lseed;
     },
-    updateReadList: function (encryptedSeed) {
+    updateReadList: function (encSeed) {
         if (!this.readList) {
-            this.readList = [];
+            this.readList = csbSecurityContext.createEncryptedSecretList();
         }
-        this.readList.push(encryptedSeed);
+        this.readList.addEncryptedSecret(encSeed);
     },
-    updateWriteList: function (encryptedSeed) {
+    updateWriteList: function (agentId) {
         if (!this.writeList) {
-            this.writeList = [];
+            this.writeList = csbSecurityContext.createAgentList();
         }
 
-        this.writeList.push(encryptedSeed);
+        this.writeList.addAgent(agentId);
     }
 });
