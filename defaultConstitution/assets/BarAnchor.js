@@ -1,4 +1,3 @@
-const csbSecurityContext = require("security-context").createSecurityContext("CSBSecurityContext");
 $$.asset.describe("BarAnchor", {
     public: {
         mountPoint: "string",
@@ -6,22 +5,21 @@ $$.asset.describe("BarAnchor", {
         readList: "array", //encrypted seeds with public keys
         writeList: "array", //agentIds
     },
-    init: function (mountPoint, barMapDigest, lseed) {
+    init: function (mountPoint, barMapDigest) {
         this.mountPoint = mountPoint;
         this.barMapDigest = barMapDigest;
-        this.lseed = lseed;
     },
-    updateReadList: function (encSeed) {
+    updateReadList: function (encryptedSeed) {
         if (!this.readList) {
-            this.readList = csbSecurityContext.createEncryptedSecretList();
+            this.readList = [];
         }
-        this.readList.addEncryptedSecret(encSeed);
+        this.readList.push(encryptedSeed);
     },
     updateWriteList: function (agentId) {
         if (!this.writeList) {
-            this.writeList = csbSecurityContext.createAgentList();
+            this.writeList = [];
         }
 
-        this.writeList.addAgent(agentId);
+        this.writeList.push(agentId);
     }
 });
