@@ -1,5 +1,6 @@
 $$.asset.describe("BarAnchor", {
     public: {
+        alias: "string",
         mountPoint: "string",
         barMapDigest: "string",
         readList: "array", //encrypted seeds with public keys
