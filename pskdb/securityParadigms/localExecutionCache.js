@@ -15,6 +15,10 @@ module.exports = {
         return cetransaction;
     },
     verifyTransaction:function(t, handler, forceDeepVerification, blockchain){
+
+        //todo: to be removed later; modification done in the same time with the mod in pskdb
+        return true;
+
         let old_assets = {};
         let new_assets = {};
         let fastCheck = true;

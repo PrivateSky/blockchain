@@ -77,7 +77,8 @@ function DBTransactionHandler(parentStorage){
         }
 
         let result = internalReadKey();
-        writeSet[keyName] = result;
+        //writeSet[keyName] = result;
+
         /*
         if(mandatoryToExist){
             console.debug("Looking for ", keyName, " Version:", parentStorage.version(keyName), "Result:", result);
