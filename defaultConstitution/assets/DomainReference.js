@@ -7,7 +7,10 @@ $$.asset.describe("DomainReference", {
         constitution:"string",
         workspace:"string",
         remoteInterfaces:"map",
-        localInterfaces:"map"
+        localInterfaces:"map",
+        communicationInterfaces: "map",
+        maximumNumberOfWorkers: "number",
+        workerStrategy: "string"
     },
     init:function(role, alias){
         this.role = role;
@@ -15,6 +18,8 @@ $$.asset.describe("DomainReference", {
         this.addresses = {};
         this.remoteInterfaces = {};
         this.localInterfaces = {};
+        this.communicationInterfaces = {};
+        this.workerStrategy = 'threads';
     },
     updateDomainAddress:function(replicationAgent, address){
         if(!this.addresses){
@@ -61,5 +66,17 @@ $$.asset.describe("DomainReference", {
     },
     getWorkspace:function(){
         return this.workspace;
+    },
+    addCommunicationInterface(alias, virtualMQEndpoint, zeroMQEndpoint) {
+        if (!this.communicationInterfaces) {
+            this.communicationInterfaces = {};
+        }
+        this.communicationInterfaces[alias] = {virtualMQ: virtualMQEndpoint, zeroMQ: zeroMQEndpoint};
+    },
+    setMaximumNumberOfWorkers: function(maximumNumberOfWorkers) {
+        this.maximumNumberOfWorkers = maximumNumberOfWorkers;
+    },
+    setWorkerStrategy: function(workerStrategy) {
+        this.workerStrategy = workerStrategy;
     }
 });
