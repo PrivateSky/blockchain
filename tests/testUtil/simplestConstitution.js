@@ -2,8 +2,8 @@
 
 $$.asset.describe("Agent", {
     public:{
-        alias:"string:key",
-        publicKey:"string"
+        alias:"string @resolver @minmax<ss> @sss",
+        publicKey:"string @dsds"
     },
     init:function(alias, value){
         this.alias      = alias;
