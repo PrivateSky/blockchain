@@ -56,7 +56,6 @@ function LocalWSCache(folder) {
                 callback(err, objRes);
                 console.log("Initialisating empty blockchain state");
             } else {
-                console.log('READ FILE', res);
                 objRes = JSON.parse(res);
                 storage.pskdb = objRes.pskdb;
                 storage.keys  = objRes.keys;
