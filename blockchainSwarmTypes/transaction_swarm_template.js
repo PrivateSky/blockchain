@@ -15,8 +15,16 @@ exports.createForObject = function(valueObject, thisObject, localId){
 		_blockchain = blockchain;
 		thisObject.transaction = blockchain.beginTransaction(thisObject);
 	};
-	ret.commit = function(){
+
+	ret.commit = function () {
 		_blockchain.commit(thisObject.transaction);
-	}
+	};
+
+	ret.onCommit = function (callback) {
+		thisObject.observe((event) => {
+			callback(event.err);
+		});
+	};
+
 	return ret;
 };

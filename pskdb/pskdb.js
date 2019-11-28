@@ -1,76 +1,76 @@
 let CNST = require("../moduleConstants");
-let  cutil   = require("../OBFT/transactionsUtil");
+let cutil = require("../OBFT/transactionsUtil");
 let bm = require("../index");
 
 //var ssutil  = require("pskcrypto");
 
 
-function KeyValueDBWithVersions(worldStateCache){ //main storage
-    let cset        = {};  // contains all keys
+function KeyValueDBWithVersions(worldStateCache) { //main storage
+    let cset = {};  // contains all keys
     let keyVersions = {};  //will store versions
     let self = this;
 
-    this.dump = function(){
+    this.dump = function () {
         //console.log("Main Storage", {keyVersions,cset})
         worldStateCache.dump();
-    }
+    };
 
-    this.readKey = function (keyName, mandatoryToExist){
-        if(keyVersions.hasOwnProperty(keyName)){
+    this.readKey = function (keyName, mandatoryToExist) {
+        if (keyVersions.hasOwnProperty(keyName)) {
             return cset[keyName];
         }
-        if(mandatoryToExist){
+        if (mandatoryToExist) {
             keyVersions[keyName] = 0;
         }
         return undefined;
-    }
+    };
 
-    this.writeKey = function (keyName, value, newVersion){
+    this.writeKey = function (keyName, value, newVersion) {
 
-        if(keyVersions.hasOwnProperty(keyName)){
-            if(!newVersion){
+        if (keyVersions.hasOwnProperty(keyName)) {
+            if (!newVersion) {
                 keyVersions[keyName]++;
             } else {
                 keyVersions[keyName] = newVersion;
             }
-        } else{
+        } else {
             keyVersions[keyName] = 0;
         }
         cset[keyName] = value;
-    }
+    };
 
-    this.version = function(keyName){
-        if(keyVersions.hasOwnProperty(keyName)){
+    this.version = function (keyName) {
+        if (keyVersions.hasOwnProperty(keyName)) {
             return keyVersions[keyName];
         }
         return undefined;
-    }
+    };
 
-    this.getInternalValues = function(currentPulse){
+    this.getInternalValues = function (currentPulse) {
         return {
             cset,
-            versions:keyVersions,
+            versions: keyVersions,
             currentPulse
         }
     }
 }
 
-function DBTransactionHandler(parentStorage){
-    let readSetVersions  = {}; //version of a key when read first time
-    let writeSet         = {};  //contains only keys modified in handlers
+function DBTransactionHandler(parentStorage) {
+    let readSetVersions = {}; //version of a key when read first time
+    let writeSet = {};  //contains only keys modified in handlers
 
-    this.dump = function(){
-        console.log("DBTransactionHandler:", {readSetVersions,writeSet});
+    this.dump = function () {
+        console.log("DBTransactionHandler:", {readSetVersions, writeSet});
         parentStorage.dump();
-    }
+    };
 
-    this.readKey = function (keyName, mandatoryToExist){
-        function internalReadKey(){
-            if(readSetVersions.hasOwnProperty(keyName)){
+    this.readKey = function (keyName, mandatoryToExist) {
+        function internalReadKey() {
+            if (readSetVersions.hasOwnProperty(keyName)) {
                 return writeSet[keyName];
             }
             let version = parentStorage.version(keyName);
-            if(version != undefined){
+            if (version != undefined) {
                 readSetVersions[keyName] = version;
             }
             return parentStorage.readKey(keyName);
@@ -91,21 +91,21 @@ function DBTransactionHandler(parentStorage){
         return result;
     };
 
-    this.writeKey = function (keyName, value){
+    this.writeKey = function (keyName, value) {
         this.readKey(keyName);         //save read version
         writeSet[keyName] = value;
     };
 
-    this.computeSwarmTransactionDiff = function(){
+    this.computeSwarmTransactionDiff = function () {
         return {
-            input     : readSetVersions,
-            output    : writeSet
+            input: readSetVersions,
+            output: writeSet
         };
     };
 }
 
 
-function PSKDB(worldStateCache, historyStorage){
+function PSKDB(worldStateCache, historyStorage) {
     this.blockchain = undefined;
     let mainStorage = new KeyValueDBWithVersions(worldStateCache);
     let self = this;
@@ -113,39 +113,39 @@ function PSKDB(worldStateCache, historyStorage){
     let currentPulse = 0;
     let hashOfLatestCommittedBlock = "Genesis Block";
 
-    this.getHandler = function(){ // the single way of working with pskdb
+    this.getHandler = function () { // the single way of working with pskdb
         let tempStorage = new DBTransactionHandler(mainStorage);
         return tempStorage;
-    }
+    };
 
-    this.getCurrentPulse = function(){
+    this.getCurrentPulse = function () {
         return currentPulse;
-    }
+    };
 
-    this.setCurrentPulse = function(cp){
+    this.setCurrentPulse = function (cp) {
         currentPulse = cp;
-    }
+    };
 
-    this.getPreviousHash = function(){
+    this.getPreviousHash = function () {
         return hashOfLatestCommittedBlock;
-    }
+    };
 
-    this.initialise = function(reportResultCallback){
+    this.initialise = function (reportResultCallback) {
         let gotLatestBlock_done = false;
         let gotState_done = false;
         let lbn = 0;
         let state = 0;
         let cp = 0;
 
-        function loadNextBlock(){
-            if(cp > lbn){
-                if(lbn != 0){
+        function loadNextBlock() {
+            if (cp > lbn) {
+                if (lbn != 0) {
                     currentPulse = cp;
                 }
-                reportResultCallback(null,lbn);
+                reportResultCallback(null, lbn);
             } else {
-                historyStorage.loadSpecificBlock(cp, function(err, block){
-                    if(block){
+                historyStorage.loadSpecificBlock(cp, function (err, block) {
+                    if (block) {
                         self.commitBlock(block, true);
                         cp = block.pulse;
                     }
@@ -155,34 +155,34 @@ function PSKDB(worldStateCache, historyStorage){
             }
         }
 
-        function loadMissingBlocksFromHistory(){
-            if(gotState_done &&  gotLatestBlock_done){
-                if(state && state.pulse){
+        function loadMissingBlocksFromHistory() {
+            if (gotState_done && gotLatestBlock_done) {
+                if (state && state.pulse) {
                     cp = state.pulse;
                 }
                 console.log("Reloading from cache at pulse ", cp, "and rebuilding state until pulse", lbn);
-                if(state.pulse){
+                if (state.pulse) {
                     mainStorage.initialiseInternalValue(state);
                 }
                 loadNextBlock();
             }
         }
 
-        function gotLatestBlock(err, val){
+        function gotLatestBlock(err, val) {
             gotLatestBlock_done = true;
-            if(!err){
+            if (!err) {
                 lbn = val;
             }
             loadMissingBlocksFromHistory();
         }
 
-        function gotState(err, val){
+        function gotState(err, val) {
             gotState_done = true;
 
-            if(!err){
+            if (!err) {
                 state = val;
             }
-            if(state.latestBlockHash){
+            if (state.latestBlockHash) {
                 hashOfLatestCommittedBlock = state.latestBlockHash;
             }
             loadMissingBlocksFromHistory();
@@ -190,32 +190,41 @@ function PSKDB(worldStateCache, historyStorage){
 
         worldStateCache.getState(gotState);
         historyStorage.getLatestBlockNumber(gotLatestBlock);
-    }
+    };
 
 
-
-    this.commitBlock = function(block, doNotSaveHistory){
+    this.commitBlock = function (block, doNotSaveHistory, callback) {
         let blockSet = block.blockset;
         currentPulse = block.pulse;
 
-        let verificationKeySpace = new VerificationKeySpaceHandler(mainStorage, worldStateCache, this.blockchain)
+        let verificationKeySpace = new VerificationKeySpaceHandler(mainStorage, worldStateCache, this.blockchain);
 
         verificationKeySpace.commit(blockSet);
 
         hashOfLatestCommittedBlock = block.hash;
-        if(!doNotSaveHistory){
-            historyStorage.appendBlock( block, false, $$.logError);
+        if (!doNotSaveHistory) {
+            historyStorage.appendBlock(block, false, (err) => {
+                if (err) {
+                    return callback(err);
+                }
+
+                __updateState();
+            });
+        } else {
+            __updateState()
         }
 
-        let internalValues = mainStorage.getInternalValues(currentPulse);
-        internalValues.latestBlockHash = block.hash;
-        worldStateCache.updateState(internalValues, $$.logError);
-    }
+        function __updateState() {
+            let internalValues = mainStorage.getInternalValues(currentPulse);
+            internalValues.latestBlockHash = block.hash;
+            worldStateCache.updateState(internalValues, callback);
+        }
+    };
 
-    this.computePTBlock = function(nextBlockSet){
+    this.computePTBlock = function (nextBlockSet) {
         let tempStorage = new VerificationKeySpaceHandler(mainStorage, worldStateCache, blockchain);
         return tempStorage.computePTBlock(nextBlockSet);
-    }
+    };
 
     /* Verification Space Digest is now the hash of the latest commited block*/
     this.getHashLatestBlock = historyStorage.getHashLatestBlock;
@@ -223,62 +232,62 @@ function PSKDB(worldStateCache, historyStorage){
 
 let lec = require("./securityParadigms/localExecutionCache");
 
-    /* play the role of DBTransactionHandler (readKey, writeKey) while also doing transaction validation*/
-function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain){
-    let readSetVersions  = {}; //version of a key when read first time
+/* play the role of DBTransactionHandler (readKey, writeKey) while also doing transaction validation*/
+function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain) {
+    let readSetVersions = {}; //version of a key when read first time
     let writeSetVersions = {}; //increment version with each writeKey
-    let writeSet         = {};  //contains only keys modified in handlers
+    let writeSet = {};  //contains only keys modified in handlers
     let self = this;
 
     let aliases = {};
 
-    this.dump = function(){
-        console.log("VerificationKeySpaceHandler:", {readSetVersions,writeSetVersions,writeSet});
+    this.dump = function () {
+        console.log("VerificationKeySpaceHandler:", {readSetVersions, writeSetVersions, writeSet});
         parentStorage.dump();
-    }
+    };
 
 
-    this.readKey = function (keyName){
-        if(writeSetVersions.hasOwnProperty(keyName)){
+    this.readKey = function (keyName) {
+        if (writeSetVersions.hasOwnProperty(keyName)) {
             return writeSet[keyName];
         }
         readSetVersions[keyName] = parentStorage.version(keyName);
         return parentStorage.readKey(keyName);
-    }
+    };
 
-    this.saveAlias = function(assetType, alias, swarmId){
+    this.saveAlias = function (assetType, alias, swarmId) {
         aliases[swarmId] = {assetType, alias};
-    }
+    };
 
-    this.writeKey = function (keyName, value){
+    this.writeKey = function (keyName, value) {
         this.readKey(keyName);         //save read version
-        if(!writeSetVersions.hasOwnProperty(keyName)){
+        if (!writeSetVersions.hasOwnProperty(keyName)) {
             writeSetVersions[keyName] = readSetVersions[keyName];
         }
         writeSetVersions[keyName]++;
         writeSet[keyName] = value;
-    }
+    };
 
-    this.version = function(keyName){
-        if(writeSetVersions.hasOwnProperty(keyName)){
+    this.version = function (keyName) {
+        if (writeSetVersions.hasOwnProperty(keyName)) {
             return writeSetVersions[keyName];
         }
         return parentStorage.version(keyName);
-    }
+    };
 
-    function applyTransaction(t, willBeCommited){
+    function applyTransaction(t, willBeCommited) {
         let ret = true;
         lec.ensureEventTransaction(t);
-        for(let k in t.input){
+        for (let k in t.input) {
             let transactionVersion = t.input[k];
-            if( transactionVersion == undefined){
+            if (transactionVersion == undefined) {
                 transactionVersion = 0;
             }
             let currentVersion = self.version(k);
-            if(currentVersion == undefined || currentVersion == null){
+            if (currentVersion == undefined || currentVersion == null) {
                 currentVersion = 0;
             }
-            if(transactionVersion != currentVersion){
+            if (transactionVersion != currentVersion) {
                 //console.log(k, transactionVersion , currentVersion);
                 //ret = "Failed to apply in transactionVersion != currentVersion (" + transactionVersion + "!="+ currentVersion + ")";
                 return false;
@@ -286,11 +295,11 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain)
         }
 
         //TODO: potential double spending bug if a transaction was replaced
-        if(!lec.verifyTransaction(t, self, willBeCommited, blockchain)){
+        if (!lec.verifyTransaction(t, self, willBeCommited, blockchain)) {
             return false;
         }
 
-        for(let k in t.output){
+        for (let k in t.output) {
             self.writeKey(k, t.output[k]);
         }
 
@@ -301,14 +310,14 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain)
         return ret;
     }
 
-    this.computePTBlock = function(nextBlockSet){   //make a transactions block from nextBlockSet by removing invalid transactions from the key versions point of view
+    this.computePTBlock = function (nextBlockSet) {   //make a transactions block from nextBlockSet by removing invalid transactions from the key versions point of view
         let validBlock = [];
         let orderedByTime = cutil.orderCRTransactions(nextBlockSet);
         let i = 0;
 
-        while(i < orderedByTime.length){
+        while (i < orderedByTime.length) {
             let t = orderedByTime[i];
-            if(applyTransaction(t)){
+            if (applyTransaction(t)) {
                 validBlock.push(t.digest);
             }
             i++;
@@ -316,21 +325,22 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain)
 
 
         return validBlock;
-    }
+    };
 
-    this.commit = function(blockSet, reportDropping){
+    this.commit = function (blockSet, reportDropping) {
         let i = 0;
         let orderedByTime = cutil.orderCRTransactions(blockSet);
 
-        while( i < orderedByTime.length ){
+        while (i < orderedByTime.length) {
             let t = orderedByTime[i];
-            if(applyTransaction(t, true) && reportDropping){
+            if (applyTransaction(t, true) && reportDropping) {
                 $$.log("Dropping transaction", t);
-            };
+            }
+
             i++;
         }
 
-        for(let v in writeSetVersions){
+        for (let v in writeSetVersions) {
             parentStorage.writeKey(v, writeSet[v], writeSetVersions[v]);
         }
 
@@ -339,6 +349,6 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain)
 }
 
 
-exports.newPSKDB = function(worldStateCache, historyStorage){
+exports.newPSKDB = function (worldStateCache, historyStorage) {
     return new PSKDB(worldStateCache, historyStorage);
-}
+};

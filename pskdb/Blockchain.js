@@ -27,7 +27,7 @@ function AliasIndex(assetType, pdsHandler, worldStateCache) {
     }
 }
 
-function createLoadAssets(blockchain, pdsHandler, worldStateCache){
+function createLoadAssets(blockchain, pdsHandler, worldStateCache) {
     return function (assetType) {
         assetType = $$.fixSwarmName(assetType);
         const assets = [];
@@ -41,9 +41,9 @@ function createLoadAssets(blockchain, pdsHandler, worldStateCache){
     };
 }
 
-function createLookup(blockchain, pdsHandler, SPRegistry, worldStateCache){
+function createLookup(blockchain, pdsHandler, SPRegistry, worldStateCache) {
     function hasAliases(spaceName) {
-        let ret  = !!worldStateCache.readKey(spaceName + CNST.ALIASES);
+        let ret = !!worldStateCache.readKey(spaceName + CNST.ALIASES);
         return ret;
     }
 
@@ -60,7 +60,7 @@ function createLookup(blockchain, pdsHandler, SPRegistry, worldStateCache){
         const value = pdsHandler.readKey(assetType + '/' + localUid, true);
 
         if (!value) {
-            $$.log("Lookup fail, asset not found: ",assetType, " with alias", aid, value);
+            $$.log("Lookup fail, asset not found: ", assetType, " with alias", aid, value);
             //pdsHandler.dump();
             //return $$.asset.start(assetType);
             return null;
@@ -82,69 +82,72 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
         }
-        if(!handler){
+        if (!handler) {
             handler = pskdb.getHandler();
         }
         return new Transaction(self, handler, transactionSwarm, worldStateCache, spr);
     };
 
 
-    this.start = function(reportBootingFinishedCallback){
-        pskdb.initialise(function(err,res){
-            reportBootingFinishedCallback(err,self);
+    this.start = function (reportBootingFinishedCallback) {
+        pskdb.initialise(function (err, res) {
+            reportBootingFinishedCallback(err, self);
         });
     };
 
 
-    this.lookup = function(assetType, aid){
+    this.lookup = function (assetType, aid) {
         let newLookup = createLookup(self, pskdb.getHandler(), spr, worldStateCache);
         return newLookup(assetType, aid);
     };
 
     this.loadAssets = createLoadAssets(self, pskdb.getHandler(), worldStateCache);
 
-    this.getSPRegistry = function(){
+    this.getSPRegistry = function () {
         return spr;
     };
 
-    this.signAs = function(agentId, msg){
+    this.signAs = function (agentId, msg) {
         return signatureProvider.signAs(agentId, msg);
     };
 
-    this.verifySignature = function(msg, signatures){
+    this.verifySignature = function (msg, signatures) {
         return signatureProvider.verify(msg, signatures);
     };
 
 
-    this.registerSecurityParadigm = function(SPName, apiName, factory){
+    this.registerSecurityParadigm = function (SPName, apiName, factory) {
         return spr.register(SPName, apiName, factory);
     };
 
 
-    this.startCommandAs = function(agentId, transactionSwarmType,...args){
+    this.startCommandAs = function (agentId, transactionSwarmType, ...args) {
         let t = bm.createCRTransaction(transactionSwarmType, args, null, null, consensusAlgorithm.getCurrentPulse());
         t.signatures = [this.signAs(agentId, t.digest)];
         consensusAlgorithm.commit(t);
     };
 
-    this.startTransactionAs = function(agentId, transactionSwarmType,...args){
-        let swarm = $$.transaction.startWithContext(self, transactionSwarmType,...args);
+    this.startTransactionAs = function (agentId, transactionSwarmType, ...args) {
+        let swarm = $$.transaction.startWithContext(self, transactionSwarmType, ...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
         swarm.setMetadata(CNST.SIGNING_AGENT, agentId);
-       //console.log(swarm);
+        return swarm;
+        //console.log(swarm);
     };
 
     this.commit = function (transaction) {
         let swarm = transaction.getSwarm();
-        let handler =  transaction.getHandler();
+        let handler = transaction.getHandler();
         const diff = handler.computeSwarmTransactionDiff(swarm);
         //console.log("Diff is", diff.output);
-        const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
+        const t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
         t.signatures = [self.signAs(swarm.getMetadata(CNST.SIGNING_AGENT), t.digest)];
-        consensusAlgorithm.commit(t);
+        consensusAlgorithm.commit(t, (err, status) => {
+            swarm.notify({err});
+        });
     };
 
-    this.dump = function(){
+    this.dump = function () {
         pskdb.getHandler().dump();
     };
 }
@@ -153,7 +156,7 @@ function Transaction(blockchain, pdsHandler, transactionSwarm, worldStateCache, 
 
     let self = this;
 
-    this.getSwarm = function(){
+    this.getSwarm = function () {
         return transactionSwarm;
     };
 
@@ -179,20 +182,20 @@ function Transaction(blockchain, pdsHandler, transactionSwarm, worldStateCache, 
 
     this.loadAssets = createLoadAssets(blockchain, pdsHandler, worldStateCache);
 
-    this.createAsset = function(swarmTypeName, ctor,...args){
-        let  asset = $$.assets.startWithContext(blockchain,swarmTypeName, ctor,...args);
+    this.createAsset = function (swarmTypeName, ctor, ...args) {
+        let asset = $$.assets.startWithContext(blockchain, swarmTypeName, ctor, ...args);
         this.add(asset);
         return asset;
-    }
+    };
 
-    this.reviveAsset = function(assetValue){
+    this.reviveAsset = function (assetValue) {
         let asset = $$.assets.continue(assetValue);
-        asset.__reinit(self)
+        asset.__reinit(self);
         return asset;
-    }
+    };
 
 
-    this.commit = function(){
+    this.commit = function () {
         blockchain.commit(self);
     };
 }
