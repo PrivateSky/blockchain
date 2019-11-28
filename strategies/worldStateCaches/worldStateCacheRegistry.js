@@ -50,7 +50,7 @@ function LocalWSCache(folder) {
     let fs = require("fs");
 
     this.getState = function (callback) {
-        fs.readFile(worldStateCachePath, function (err, res) {
+        fs.readFile(worldStateCachePath, 'utf8', function (err, res) {
             let objRes = {};
             if (err) {
                 callback(err, objRes);
