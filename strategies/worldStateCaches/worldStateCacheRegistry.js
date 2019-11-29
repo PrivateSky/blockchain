@@ -90,7 +90,9 @@ function MemoryCache() {
         //console.info("Commiting state in memory cache "/*, internalValues*/)
         storage.pskdb = internalValues;
         storage.pulse = internalValues.pulse;
-        callback(null, storage.pskdb);
+        setImmediate(() => {
+            callback(null, storage.pskdb);
+        });
     };
 
     this.dump = function(){

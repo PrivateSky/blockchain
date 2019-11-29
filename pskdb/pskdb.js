@@ -146,11 +146,20 @@ function PSKDB(worldStateCache, historyStorage) {
             } else {
                 historyStorage.loadSpecificBlock(cp, function (err, block) {
                     if (block) {
-                        self.commitBlock(block, true);
-                        cp = block.pulse;
+                        self.commitBlock(block, true, (err) => {
+                            if(err) {
+                                reportResultCallback(err);
+                                return;
+                            }
+                            cp = block.pulse;
+
+                            cp++;
+                            loadNextBlock();
+                        });
+                    } else {
+                        cp++;
+                        loadNextBlock();
                     }
-                    cp++;
-                    loadNextBlock();
                 })
             }
         }
@@ -194,6 +203,7 @@ function PSKDB(worldStateCache, historyStorage) {
 
 
     this.commitBlock = function (block, doNotSaveHistory, callback) {
+        incrementCommitsNumber();
         let blockSet = block.blockset;
         currentPulse = block.pulse;
 
@@ -217,14 +227,43 @@ function PSKDB(worldStateCache, historyStorage) {
         function __updateState() {
             let internalValues = mainStorage.getInternalValues(currentPulse);
             internalValues.latestBlockHash = block.hash;
-            worldStateCache.updateState(internalValues, callback);
+            worldStateCache.updateState(internalValues, (...args) => {
+                callback(...args);
+                decrementCommitsNumber();
+            });
         }
     };
 
     this.computePTBlock = function (nextBlockSet) {
-        let tempStorage = new VerificationKeySpaceHandler(mainStorage, worldStateCache, blockchain);
+        let tempStorage = new VerificationKeySpaceHandler(mainStorage, worldStateCache, this.blockchain);
         return tempStorage.computePTBlock(nextBlockSet);
     };
+
+    const notifyCommittedCallbacks = [];
+    let commitsInProgress = 0;
+    this.onceAllCommitted = function (callback) {
+        notifyCommittedCallbacks.push(callback);
+    };
+
+    function incrementCommitsNumber() {
+        commitsInProgress += 1;
+    }
+
+    function decrementCommitsNumber() {
+        commitsInProgress -= 1;
+
+        if(commitsInProgress === 0) {
+            notifyCommitted();
+        }
+    }
+
+    function notifyCommitted() {
+        for (const callback of notifyCommittedCallbacks) {
+            callback();
+        }
+
+        notifyCommittedCallbacks.splice(0, notifyCommittedCallbacks.length);
+    }
 
     /* Verification Space Digest is now the hash of the latest commited block*/
     this.getHashLatestBlock = historyStorage.getHashLatestBlock;

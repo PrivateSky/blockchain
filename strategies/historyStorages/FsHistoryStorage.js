@@ -53,12 +53,19 @@ function FsHistoryStorage(folder) {
                 return callback(err);
             }
 
-            fs.readFile(blocksPath + "/" + blockNumber, function (err, res) {
+            fs.readFile(blocksPath + "/" + blockNumber, 'utf8', function (err, res) {
                 if (err) {
                     callback(err, null);
                 } else {
-                    res = JSON.parse(res);
-                    lht.update(res.pulse, res);
+                    try {
+                        res = JSON.parse(res);
+                        lht.update(res.pulse, res);
+                    } catch (e) {
+                        console.log('could not parse', e, res);
+                        callback(e);
+                        return;
+                    }
+
                     callback(null, res);
                 }
             });

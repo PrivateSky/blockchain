@@ -14,10 +14,11 @@ function DirectCommitAlgorithm() {
                 return callback(err);
             }
 
-            cp++;
-            this.pskdb.setCurrentPulse(cp);
             callback();
         });
+
+        cp++;
+        this.pskdb.setCurrentPulse(cp);
     };
 
     this.getCurrentPulse = function () {

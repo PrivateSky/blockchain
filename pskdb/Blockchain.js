@@ -147,6 +147,8 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         });
     };
 
+    this.onceAllCommitted = pskdb.onceAllCommitted;
+
     this.dump = function () {
         pskdb.getHandler().dump();
     };
