@@ -3,21 +3,17 @@ $$.asset.describe("DomainReference", {
     public:{
         role:"string:index",
         alias:"string:key",
-        addresses:"map",
         constitution:"string",
         workspace:"string",
-        remoteInterfaces:"map",
-        localInterfaces:"map",
+        blockChainStorageFolderName:"",
+        addresses: "map",
         communicationInterfaces: "map",
-        maximumNumberOfWorkers: "number",
         workerStrategy: "string"
     },
     init:function(role, alias){
         this.role = role;
         this.alias = alias;
         this.addresses = {};
-        this.remoteInterfaces = {};
-        this.localInterfaces = {};
         this.communicationInterfaces = {};
         this.workerStrategy = 'threads';
     },
@@ -31,29 +27,11 @@ $$.asset.describe("DomainReference", {
         this.addresses[replicationAgent] = undefined;
         delete this.addresses[replicationAgent];
     },
-    addRemoteInterface:function(alias, remoteEndPoint){
-        if(!this.remoteInterfaces){
-            this.remoteInterfaces = {};
-        }
-        this.remoteInterfaces[alias] = remoteEndPoint;
+    setBlockChainStorageFolderName: function(storageFolderName){
+        this.blockChainStorageFolderName = storageFolderName;
     },
-    removeRemoteInterface:function(alias){
-        if(this.remoteInterface){
-            this.remoteInterfaces[alias] = undefined;
-            delete this.remoteInterfaces[alias];
-        }
-    },
-    addLocalInterface:function(alias, path){
-        if(!this.localInterfaces){
-            this.localInterfaces = {};
-        }
-        this.localInterfaces[alias] = path;
-    },
-    removeLocalInterface:function(alias){
-        if(this.localInterfaces){
-            this.localInterfaces[alias] = undefined;
-            delete this.localInterfaces[alias];
-        }
+    getBlockChainStorageFolderName: function() {
+        return this.blockChainStorageFolderName;
     },
     setConstitution:function(pathOrUrlOrCSB){
         this.constitution = pathOrUrlOrCSB;
@@ -72,9 +50,6 @@ $$.asset.describe("DomainReference", {
             this.communicationInterfaces = {};
         }
         this.communicationInterfaces[alias] = {virtualMQ: virtualMQEndpoint, zeroMQ: zeroMQEndpoint};
-    },
-    setMaximumNumberOfWorkers: function(maximumNumberOfWorkers) {
-        this.maximumNumberOfWorkers = maximumNumberOfWorkers;
     },
     setWorkerStrategy: function(workerStrategy) {
         this.workerStrategy = workerStrategy;
