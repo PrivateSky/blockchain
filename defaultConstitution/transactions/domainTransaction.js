@@ -1,7 +1,7 @@
 const sharedPhases = require('./sharedPhases');
 
 $$.transaction.describe("Domain", {
-    add: function (alias, role, workspace, constitution, communicationInterfaces) {
+    add: function (alias, role, workspace, constitution) {
         let domain = this.transaction.lookup("DomainReference", alias);
 
         if(!domain){
@@ -16,13 +16,6 @@ $$.transaction.describe("Domain", {
 
         if(typeof constitution !== "undefined"){
             domain.setConstitution(constitution);
-        }
-
-        if(typeof communicationInterfaces !== "undefined"){
-            Object.keys(communicationInterfaces).forEach(commAlias => {
-                const {virtualMQ, zeroMQ} = communicationInterfaces[commAlias];
-                domain.addCommunicationInterface(commAlias, virtualMQ, zeroMQ);
-            });
         }
 
         this.transaction.add(domain);

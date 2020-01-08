@@ -1,5 +1,6 @@
 module.exports = $$.library(function(){
     require("./DomainReference");
+    require("./DomainConfig");
     require("./Agent");
     require("./Backup");
     require("./ACLScope");
