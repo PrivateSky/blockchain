@@ -1,48 +1,61 @@
 const LatestHashTracker = require("./LatestHashTracker");
 
 function BarHistoryStorage(archive) {
-    const path = require("path");
     const blocksPath = "blocks";
     let lht = new LatestHashTracker();
 
     this.getHashLatestBlock = lht.getHashLatestBlock;
+    let latestPulse = -1;
 
     this.appendBlock = function (block, announceFlag, callback) {
-        archive.writeFile(path.join(blocksPath, block.pulse.toString()), JSON.stringify(block, null, 1), (err) => {
+        archive.writeFile(blocksPath + "/" + block.pulse.toString(), JSON.stringify(block, null, 1), (err) => {
             if (err) {
                 return callback(err);
             }
 
-            archive.writeFile(path.join(blocksPath, "index"), block.pulse.toString(), (err) => {
-                if (err) {
-                    return callback(err);
-                }
+            if (block.pulse > latestPulse) {
+                latestPulse = block.pulse;
 
-                lht.update(block.pulse, block);
-                callback();
-            });
+                archive.writeFile(blocksPath + "/index", block.pulse.toString(), (err) => {
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    lht.update(block.pulse, block);
+                    callback();
+                });
+            }
         });
     };
 
     this.getLatestBlockNumber = function (callback) {
-        archive.readFile(path.join(blocksPath, "index"), (err, res) => {
+        let maxBlockNumber = 0;
+        archive.readFile(blocksPath + "/index", (err, res) => {
             if (err) {
                 return callback(err);
             }
 
-            callback(undefined, parseInt(res.toString()));
+            maxBlockNumber = parseInt(res.toString());
+
+            callback(undefined, maxBlockNumber);
         });
     };
 
     this.loadSpecificBlock = function (blockNumber, callback) {
-        archive.readFile(path.join(blocksPath, blockNumber.toString()), (err, res) => {
+        archive.readFile(blocksPath + "/" + blockNumber.toString(), (err, res) => {
             if (err) {
                 return callback(err);
             }
 
-            res = JSON.parse(res.toString());
-            lht.update(res.pulse, res);
-            callback(undefined, res);
+            try {
+                res = JSON.parse(res.toString());
+                lht.update(res.pulse, res);
+            } catch (e) {
+                callback(e);
+                return;
+            }
+
+            callback(null, res);
         });
     };
 
