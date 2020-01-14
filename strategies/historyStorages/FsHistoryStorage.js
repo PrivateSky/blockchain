@@ -6,6 +6,7 @@ function FsHistoryStorage(folder) {
     this.getHashLatestBlock = lht.getHashLatestBlock;
 
     let fs = require("fs");
+    let latestPulse = -1;
 
     this.appendBlock = function (block, announceFlag, callback) {
         ensureBlocksPathExist((err) => {
@@ -17,14 +18,20 @@ function FsHistoryStorage(folder) {
                 if (err) {
                     return callback(err);
                 }
-                fs.writeFile(blocksPath + "/index", block.pulse.toString(), (err) => {
-                    if (err) {
-                        return callback(err);
-                    }
 
-                    lht.update(block.pulse, block);
-                    callback();
-                });
+                if(block.pulse > latestPulse) {
+                    latestPulse = block.pulse;
+
+                    fs.writeFile(blocksPath + "/index", latestPulse.toString(), (err) => {
+                        if (err) {
+                            return callback(err);
+                        }
+
+                        lht.update(block.pulse, block);
+                        callback();
+
+                    });
+                }
             });
         });
     };
