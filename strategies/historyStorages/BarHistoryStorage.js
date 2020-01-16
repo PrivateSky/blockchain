@@ -24,6 +24,8 @@ function BarHistoryStorage(archive) {
                     lht.update(block.pulse, block);
                     callback();
                 });
+            } else {
+                callback();
             }
         });
     };

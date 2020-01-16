@@ -31,6 +31,8 @@ function FsHistoryStorage(folder) {
                         callback();
 
                     });
+                } else {
+                    callback();
                 }
             });
         });
