@@ -8,7 +8,7 @@ function BarHistoryStorage(archive) {
     let latestPulse = -1;
 
     this.appendBlock = function (block, announceFlag, callback) {
-        archive.writeFile(blocksPath + "/" + block.pulse.toString(), JSON.stringify(block, null, 1), (err) => {
+        archive.writeFile(blocksPath + "/" + block.pulse, JSON.stringify(block, null, 1), (err) => {
             if (err) {
                 return callback(err);
             }
@@ -16,7 +16,7 @@ function BarHistoryStorage(archive) {
             if (block.pulse > latestPulse) {
                 latestPulse = block.pulse;
 
-                archive.writeFile(blocksPath + "/index", block.pulse.toString(), (err) => {
+                archive.writeFile(blocksPath + "/index", latestPulse.toString(), (err) => {
                     if (err) {
                         return callback(err);
                     }
