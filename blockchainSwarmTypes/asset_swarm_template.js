@@ -1,7 +1,7 @@
-var callflowModule = require("callflow");
 var CNST = require("../moduleConstants");
 
 exports.createForObject = function(valueObject, thisObject, localId){
+	var callflowModule = require("callflow");
 	var ret = callflowModule.createStandardAPIsForSwarms(valueObject, thisObject, localId);
 
 	ret.swarm           = null;

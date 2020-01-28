@@ -1,9 +1,9 @@
-let callflowModule = require("callflow");
 let CNST = require("../moduleConstants");
 
 exports.createForObject = function(valueObject, thisObject, localId){
-	let _blockchain = undefined;
+	let callflowModule = require("callflow");
 
+	let _blockchain = undefined;
 	let ret = callflowModule.createStandardAPIsForSwarms(valueObject, thisObject, localId);
 	ret.swarm           = null;
 	ret.onReturn        = null;
