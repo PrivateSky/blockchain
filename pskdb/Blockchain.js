@@ -1,4 +1,4 @@
-const bm = require('../index');
+const bm = require('../moduleExports');
 const beesHealer = require("swarmutils").beesHealer;
 var CNST = require("../moduleConstants");
 

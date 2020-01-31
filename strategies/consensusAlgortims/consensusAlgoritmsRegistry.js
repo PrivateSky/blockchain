@@ -1,4 +1,4 @@
-var mod = require("../../index");
+var mod = require("../../moduleExports");
 
 function DirectCommitAlgorithm() {
     let pskdb = null;
