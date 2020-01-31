@@ -1,6 +1,6 @@
 let CNST = require("../moduleConstants");
 let cutil = require("../OBFT/transactionsUtil");
-let bm = require("../moduleExports");
+// let bm = require("../moduleExports");
 
 //var ssutil  = require("pskcrypto");
 
