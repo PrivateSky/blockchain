@@ -28,14 +28,19 @@ exports.createForObject = function(valueObject, thisObject, localId){
 
 	ret.getSwarmId = function(){
 		return 	thisObject.getMetadata(CNST.SWARMID);
-	}
+	};
 
 	ret.getSwarmType = function(){
 		return 	thisObject.getMetadata(CNST.SWARMTYPE);
-	}
+	};
 
 	ret.__reinit = function(blockchain){
 		ret.autoInit(blockchain);
-	}
+	};
+
+	ret.asJSON = function(){
+		return thisObject.getInnerValue().publicVars;
+	};
+
 	return ret;
 };
