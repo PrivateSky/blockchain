@@ -10,11 +10,13 @@ function DirectCommitAlgorithm() {
         let cp = this.pskdb.getCurrentPulse();
         set[transaction.digest] = transaction;
         this.pskdb.commitBlock(mod.createBlock(set, cp, this.pskdb.getPreviousHash()), false, (err) => {
-            if (err) {
+            if(callback){
+                //TODO: check the call stack from csb initialization there is no callback set
                 return callback(err);
             }
-
-            callback();
+            if(err){
+                throw err;
+            }
         });
 
         cp++;
