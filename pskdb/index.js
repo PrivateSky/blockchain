@@ -4,6 +4,7 @@ module.exports = {
     startDB: function (worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, loadDefaultConstitution) {
         if(loadDefaultConstitution){
             require('../defaultConstitution/assets/index');
+            require('../defaultConstitution/swarms/index');
             require('../defaultConstitution/transactions/index');
         }
         let pds = require('./pskdb').newPSKDB(worldStateCache, historyStorage);
