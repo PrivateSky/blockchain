@@ -4,8 +4,8 @@ $$.transaction.describe("StandardCSBTransactions", {
         this.commit();
     },
 
-    addFileAnchor: function (alias, digest) {
-        this.transaction.createAsset("FileAnchor", "init", alias, digest);
+    addFileAnchor: function (alias, type, digest) {
+        this.transaction.createAsset("FileAnchor", "init", alias, type, digest);
         this.commit();
     },
 
