@@ -22,6 +22,9 @@ $$.transaction.describe("DomainConfigTransaction", {
         }
 
         this.transaction.add(domain);
+        this.onCommit(()=>{
+            this.return(undefined, domain.asJSON());
+        });
         this.commit();
     },
     getDomainDetails: sharedPhases.getAssetFactory('global.DomainConfig'),

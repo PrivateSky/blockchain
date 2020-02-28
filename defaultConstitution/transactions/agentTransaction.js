@@ -10,6 +10,9 @@ $$.transaction.describe("Agents", {
         }
 
         this.transaction.add(agent);
+        this.onCommit(()=>{
+            this.return(undefined, agent.asJSON());
+        });
         this.commit();
     }
 });

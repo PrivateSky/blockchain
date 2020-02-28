@@ -19,6 +19,9 @@ $$.transaction.describe("Domain", {
         }
 
         this.transaction.add(domain);
+        this.onCommit(()=>{
+            this.return(undefined, domain.asJSON());
+        });
         this.commit();
     },
     connectDomainLocally: function(alias, localInterface){
@@ -26,6 +29,9 @@ $$.transaction.describe("Domain", {
         domain.addLocalInterface('local', localInterface);
 
         this.transaction.add(domain);
+        this.onCommit(()=>{
+            this.return(undefined, domain.asJSON());
+        });
         this.commit();
     },
     setWorkspaceForDomain: function(alias, workspace){
@@ -33,6 +39,9 @@ $$.transaction.describe("Domain", {
         domain.setWorkspace(workspace);
 
         this.transaction.add(domain);
+        this.onCommit(()=>{
+            this.return(undefined, domain.asJSON());
+        });
         this.commit();
     },
     setConstitutionForDomain: function(alias, constitution){
@@ -40,6 +49,9 @@ $$.transaction.describe("Domain", {
         domain.setConstitution(constitution);
 
         this.transaction.add(domain);
+        this.onCommit(()=>{
+            this.return(undefined, domain.asJSON());
+        });
         this.commit();
     },
     getDomainDetails:function(alias){
@@ -51,6 +63,9 @@ $$.transaction.describe("Domain", {
         domain.addRemoteInterface(alias, remoteEndPoint);
 
         this.transaction.add(domain);
+        this.onCommit(()=>{
+            this.return(undefined, domain.asJSON());
+        });
         this.commit();
     },
     setWorkerStrategy: function (alias, workerStrategy) {
@@ -62,6 +77,9 @@ $$.transaction.describe("Domain", {
         domainReference.setWorkerStrategy(workerStrategy);
 
         this.transaction.add(domainReference);
+        this.onCommit(()=>{
+            this.return(undefined, domainReference.asJSON());
+        });
         this.commit();
     },
     setMaximumNumberOfWorkers: function (alias, maximumNumberOfWorkers) {
@@ -73,6 +91,9 @@ $$.transaction.describe("Domain", {
         domainReference.setMaximumNumberOfWorkers(maximumNumberOfWorkers);
 
         this.transaction.add(domainReference);
+        this.onCommit(()=>{
+            this.return(undefined, domainReference.asJSON());
+        });
         this.commit();
     },
     getDomainDetails: sharedPhases.getAssetFactory('global.DomainReference'),
