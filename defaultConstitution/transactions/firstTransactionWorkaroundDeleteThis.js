@@ -11,6 +11,9 @@
  */
 $$.transaction.describe("TooShortBlockChainWorkaroundDeleteThis", {
     add: function () {
-        this.transaction.commit();
+        this.onCommit(()=>{
+            this.return();
+        });
+        this.commit();
     }
 });
