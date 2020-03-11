@@ -1,5 +1,3 @@
-const beesHealer = require("swarmutils").beesHealer;
-
 module.exports = {
     getAssetFactory: function(assetType) {
         return function(alias) {
@@ -11,7 +9,7 @@ module.exports = {
                 return;
             }
 
-            this.return(undefined, beesHealer.asJSON(domainReferenceSwarm));
+            this.return(undefined, domainReferenceSwarm.asJSON());
         }
     },
     getAllAssetsFactory: function(assetType) {
@@ -19,7 +17,7 @@ module.exports = {
             const transaction = $$.blockchain.beginTransaction({});
             const domains = transaction.loadAssets(assetType) || [];
 
-            this.return(undefined, domains.map(domain => beesHealer.asJSON(domain)));
+            this.return(undefined, domains.map(domain => domain.asJSON()));
         };
     }
 };

@@ -1,4 +1,4 @@
-//const sharedPhases = require('./sharedPhases');
+const sharedPhases = require('./sharedPhases');
 
 $$.transaction.describe("Agents", {
     add: function (alias, publicKey) {
@@ -14,5 +14,6 @@ $$.transaction.describe("Agents", {
             this.return(undefined, agent.asJSON());
         });
         this.commit();
-    }
+    },
+    getAgents: sharedPhases.getAllAssetsFactory('global.Agent')
 });
