@@ -1,6 +1,6 @@
 $$.transaction.describe("StandardCSBTransactions", {
-    addBarAnchor: function (mountPoint, barMapDigest) {
-        this.transaction.createAsset("BarAnchor", "init", mountPoint, barMapDigest);
+    addBarAnchor: function (mountPoint, brickMapDigest) {
+        this.transaction.createAsset("BarAnchor", "init", mountPoint, brickMapDigest);
         this.commit();
     },
 
