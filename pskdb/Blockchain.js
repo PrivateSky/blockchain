@@ -1,5 +1,4 @@
 const bm = require('../moduleExports');
-const beesHealer = require("swarmutils").beesHealer;
 var CNST = require("../moduleConstants");
 
 function AliasIndex(assetType, pdsHandler, worldStateCache) {
@@ -174,7 +173,7 @@ function Transaction(blockchain, pdsHandler, transactionSwarm, worldStateCache, 
         }
 
 
-        const serializedSwarm = beesHealer.asJSON(asset, null, null);
+        const serializedSwarm = require("swarmutils").beesHealer.asJSON(asset, null, null);
         pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
     };
 
