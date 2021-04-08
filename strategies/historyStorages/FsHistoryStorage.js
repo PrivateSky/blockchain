@@ -8,6 +8,8 @@ function FsHistoryStorage(folder) {
     let fs = require("fs");
     let latestPulse = -1;
 
+    let currentBlockNumber = 0;
+
     this.appendBlock = function (block, announceFlag, callback) {
         ensureBlocksPathExist((err) => {
             if (err) {
@@ -19,7 +21,7 @@ function FsHistoryStorage(folder) {
                     return callback(err);
                 }
 
-                if(block.pulse > latestPulse) {
+                if (block.pulse > latestPulse) {
                     latestPulse = block.pulse;
 
                     fs.writeFile(blocksPath + "/index", latestPulse.toString(), (err) => {
@@ -29,7 +31,6 @@ function FsHistoryStorage(folder) {
 
                         lht.update(block.pulse, block);
                         callback();
-
                     });
                 } else {
                     callback();
@@ -56,29 +57,60 @@ function FsHistoryStorage(folder) {
         });
     };
 
-    this.loadSpecificBlock = function (blockNumber, callback) {
+    this.loadNextBlocks = function (onBlockLoaded, onBlocksFinished) {
         ensureBlocksPathExist((err) => {
             if (err) {
-                return callback(err);
+                return onBlocksFinished(err);
             }
 
-            fs.readFile(blocksPath + "/" + blockNumber, 'utf8', function (err, res) {
+            fs.readdir(blocksPath, (err, existingBlockFiles) => {
                 if (err) {
-                    callback(err, null);
-                } else {
-                    try {
-                        res = JSON.parse(res);
-                        lht.update(res.pulse, res);
-                    } catch (e) {
-                        console.log('could not parse', e, res);
-                        callback(e);
-                        return;
-                    }
-
-                    callback(null, res);
+                    return onBlocksFinished(err);
                 }
+
+                existingBlockFiles = existingBlockFiles
+                    .filter((file) => file !== "index")
+                    .map((file) => parseInt(file, 10))
+                    .filter((x) => !isNaN(x));
+                existingBlockFiles.sort();
+
+                const blocksToRead = existingBlockFiles.filter((blockNumber) => blockNumber >= currentBlockNumber);
+                if (!blocksToRead.length) {
+                    return onBlocksFinished();
+                }
+
+                const readNextFile = function () {
+                    const blockNumber = blocksToRead.shift();
+                    fs.readFile(`${blocksPath}/${blockNumber}`, "utf8", function (err, res) {
+                        if (err) {
+                            onBlockLoaded(err, null);
+                        } else {
+                            try {
+                                res = JSON.parse(res);
+                                lht.update(res.pulse, res);
+                                onBlockLoaded(null, res);
+                                currentBlockNumber = blockNumber + 1;
+                            } catch (e) {
+                                console.log("could not parse", e, res);
+                                onBlockLoaded(e);
+                            }
+                        }
+
+                        if (!blocksToRead.length) {
+                            return onBlocksFinished();
+                        }
+
+                        readNextFile();
+                    });
+                };
+
+                readNextFile();
             });
         });
+    };
+
+    this.setCurrentBlockNumber = function (blockNumber) {
+        currentBlockNumber = blockNumber;
     };
 
     ////////////////////////
@@ -92,8 +124,8 @@ function FsHistoryStorage(folder) {
     function ensureBlocksPathExist(callback) {
         fs.access(blocksPath, (err) => {
             if (err) {
-                fs.mkdir(blocksPath, {recursive: true}, callback);
-            }else{
+                fs.mkdir(blocksPath, { recursive: true }, callback);
+            } else {
                 callback();
             }
         });

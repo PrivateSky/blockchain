@@ -3,6 +3,8 @@ let CNST = require("../moduleConstants");
 exports.createForObject = function(valueObject, thisObject, localId){
 	let callflowModule = require("callflow");
 
+    let transactionResult;
+
 	let _blockchain = undefined;
 	let ret = callflowModule.createStandardAPIsForSwarms(valueObject, thisObject, localId);
 	ret.swarm           = null;
@@ -16,13 +18,13 @@ exports.createForObject = function(valueObject, thisObject, localId){
 
 	ret.commit = function () {
 		_blockchain.commit(thisObject.transaction, (error, status) => {
-			thisObject.transaction.getSwarm().notify({eventType: "commit", error, status});
+            thisObject.transaction.getSwarm().notify({eventType: "commit", error, status, result: transactionResult});
 		});
 	};
 
 	ret.onCommit = function (callback) {
 		thisObject.observe((event) => {
-			callback(event.error, event.status);
+            callback(event.error, event.result, event);
 		}, undefined, (event)=>{
 			return event.eventType === "commit";
 		});
@@ -30,13 +32,14 @@ exports.createForObject = function(valueObject, thisObject, localId){
 
 	ret.onReturn = function (callback) {
 		thisObject.observe((event) => {
-			callback(event.error, event.result);
+            callback(event.error, event.result, event);
 		}, undefined, (event)=>{
 			return event.eventType === "return";
 		});
 	};
 
 	ret.return = function(error, result){
+        transactionResult = result;
 		thisObject.notify({eventType: "return", error, result});
 	};
 

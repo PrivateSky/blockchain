@@ -1,8 +1,12 @@
 # BlockchainStorageInterface
-```
-    addBlock(blockAsJSON)
-    updateState(blockchainState)
-    
-    loadState()
-```
 
+```
+    readKey(key)
+    writeKey(key, value)
+    updateAliases(aliases)
+    
+    getState(callback)
+    updateState(internalValues, callback)
+
+    dump()
+```

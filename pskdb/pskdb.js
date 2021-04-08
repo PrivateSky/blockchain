@@ -137,33 +137,6 @@ function PSKDB(worldStateCache, historyStorage) {
         let state = 0;
         let cp = 0;
 
-        function loadNextBlock() {
-            if (cp > lbn) {
-                if (lbn != 0) {
-                    currentPulse = cp;
-                }
-                reportResultCallback(null, lbn);
-            } else {
-                historyStorage.loadSpecificBlock(cp, function (err, block) {
-                    if (block) {
-                        self.commitBlock(block, true, (err) => {
-                            if(err) {
-                                reportResultCallback(err);
-                                return;
-                            }
-                            cp = block.pulse;
-
-                            cp++;
-                            loadNextBlock();
-                        });
-                    } else {
-                        cp++;
-                        loadNextBlock();
-                    }
-                })
-            }
-        }
-
         function loadMissingBlocksFromHistory() {
             if (gotState_done && gotLatestBlock_done) {
                 if (state && state.pulse) {
@@ -173,7 +146,35 @@ function PSKDB(worldStateCache, historyStorage) {
                 if (state.pulse) {
                     mainStorage.initialiseInternalValue(state);
                 }
-                loadNextBlock();
+
+                console.log(`Setting current block number for history storage to ${cp}`);
+                historyStorage.setCurrentBlockNumber(cp);
+
+                const onBlockLoaded = function (err, block) {
+                    if (block) {
+                        self.commitBlock(block, true, (err) => {
+                            if(err) {
+                                reportResultCallback(err);
+                                return;
+                            }
+                            cp = block.pulse;
+
+                            cp++;
+                        });
+                    } else {
+                        cp++;
+                    }
+                };
+
+                const onBlocksFinished = function(error) {
+                    if(error) {
+                        return reportResultCallback(error);
+                    }
+                    currentPulse = cp;
+                    reportResultCallback(null, lbn);
+                }
+
+                historyStorage.loadNextBlocks(onBlockLoaded, onBlocksFinished);
             }
         }
 
